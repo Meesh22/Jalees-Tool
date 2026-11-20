@@ -1,8 +1,7 @@
 /**
  * ============================================================================
  * جليس | مجلس الأعضاء — المنطق المشترك للمشروع المساند
- * الصفحة الرئيسية: شبكة ٧٠ عضواً مقسّمة بأعمدة من قواسم العدد (١٠ / ٧ / ٥ / ٢)،
- * مع تصفية بحروف الهجاء وبحث فوري وأرقام مقاعد ثابتة.
+ * الصفحة الرئيسية: شبكة أعضاء أنيقة مع بحث فوري وأرقام مقاعد ثابتة.
  * صفحة العضو: اقتباساته ومقالاته وملخصاته.
  * ============================================================================
  */
@@ -19,20 +18,6 @@ const AVATAR_COLORS = [
   '#B1834A',
   '#3B6A51',
 ];
-
-// ترتيب حروف الهجاء العربي
-const ARABIC_ORDER = [
-  'ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش',
-  'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي',
-];
-
-// تصحيح الحرف الأول (الهمزات والألف المقصورة…)
-function firstLetter(name) {
-  let c = String(name || '').trim().charAt(0);
-  if (!c) return '#';
-  c = c.replace(/[أإآٱ]/, 'ا').replace(/ى/, 'ي').replace(/ة/, 'ه');
-  return c;
-}
 
 function initials(name) {
   const n = String(name || '').trim();
@@ -52,7 +37,7 @@ function getMember(id) {
 }
 
 /* ==========================================================================
-   الصفحة الرئيسية: شبكة الأعضاء + الحروف + البحث
+   الصفحة الرئيسية: شبكة الأعضاء والبحث
    ========================================================================== */
 function renderDirectory() {
   const grid = $('#members-grid');
@@ -65,59 +50,15 @@ function renderDirectory() {
 
   const countEl = $('#member-count');
   const search = $('#member-search');
-  const alphaBar = $('#alpha-bar');
   const empty = $('#empty-state');
 
   if (countEl) countEl.textContent = toAr(MEMBERS.length);
-
-  let activeLetter = 'all';
-
-  // بناء شريط الحروف من الحروف الموجودة فعلاً
-  const present = new Set(MEMBERS.map((m) => firstLetter(m.name)));
-  const letters = ARABIC_ORDER.filter((l) => present.has(l));
-  present.forEach((l) => {
-    if (l !== '#' && !letters.includes(l)) letters.push(l); // حروف غير قياسية
-  });
-
-  if (alphaBar) {
-    const allBtn = document.createElement('button');
-    allBtn.type = 'button';
-    allBtn.className = 'alpha-btn active';
-    allBtn.dataset.letter = 'all';
-    allBtn.textContent = 'الكل';
-    alphaBar.appendChild(allBtn);
-
-    letters.forEach((letter) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'alpha-btn';
-      btn.dataset.letter = letter;
-      btn.textContent = letter;
-      btn.setAttribute('role', 'tab');
-      alphaBar.appendChild(btn);
-    });
-
-    alphaBar.addEventListener('click', (e) => {
-      const btn = e.target.closest('.alpha-btn');
-      if (!btn) return;
-      activeLetter = btn.dataset.letter;
-      $$('.alpha-btn', alphaBar).forEach((b) =>
-        b.classList.toggle('active', b === btn)
-      );
-      apply();
-    });
-  }
 
   function apply() {
     const term = search ? search.value.trim() : '';
     const needle = normalizeName(term);
 
-    const list = MEMBERS.filter((m) => {
-      const byLetter =
-        activeLetter === 'all' || firstLetter(m.name) === activeLetter;
-      const bySearch = !needle || normalizeName(m.name).includes(needle);
-      return byLetter && bySearch;
-    });
+    const list = MEMBERS.filter((m) => !needle || normalizeName(m.name).includes(needle));
 
     render(list);
   }
@@ -141,15 +82,20 @@ function renderDirectory() {
       card.className = 'member-card';
       card.href = `member.html?id=${encodeURIComponent(member.id)}`;
       card.setAttribute('aria-label', `فتح مجلس ${member.name}`);
+      card.style.setProperty('--card-accent', color);
       card.innerHTML = `
-        <span class="card-seat">${toAr(member._seat)}</span>
-        <div class="card-avatar" style="background:${color}">${initials(member.name)}</div>
-        <div class="card-body">
+        <div class="card-top">
+          <span class="card-seat">${toAr(member._seat)}</span>
           <span class="card-role">${esc(member.role)}</span>
-          <h3 class="card-name">${esc(member.name)}</h3>
-          <div class="card-stats">${toAr(total)} محتوى</div>
         </div>
-        <span class="card-open">افتح المجلس<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M10 6l6 6-6 6"/></svg></span>
+        <div class="card-main">
+          <span class="card-rule" aria-hidden="true"></span>
+          <h3 class="card-name">${esc(member.name)}</h3>
+        </div>
+        <div class="card-bottom">
+          <div class="card-stats">${toAr(total)} محتوى</div>
+          <span class="card-enter">تصفّح<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M10 6l6 6-6 6"/></svg></span>
+        </div>
       `;
       frag.appendChild(card);
     });
@@ -202,23 +148,6 @@ function renderMemberDetail() {
   renderSection('quotes', member.quotes || [], renderQuoteCard);
   renderSection('articles', member.articles || [], renderArticleCard);
   renderSection('summaries', member.summaries || [], renderSummaryCard);
-
-  // حالة عدم وجود محتوى
-  const area = $('.content-area');
-  if (area) {
-    const old = area.querySelector('.member-empty-note');
-    if (old) old.remove();
-    if (contentCount(member) === 0) {
-      const note = document.createElement('div');
-      note.className = 'empty-state member-empty-note';
-      note.style.padding = '44px 10px 10px';
-      note.innerHTML = `
-        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5C10 4.8 7.5 4 4 4v15c3.5 0 6 .8 8 2.5 2-1.7 4.5-2.5 8-2.5V4c-3.5 0-6 .8-8 2.5Z"/><path d="M12 6.5V21"/></svg>
-        <h3>لا يوجد محتوى بعد</h3>
-        <p>لم تُضَف اقتباسات أو مقالات أو ملخصات لهذا العضو حتى الآن.</p>`;
-      area.appendChild(note);
-    }
-  }
 }
 
 function renderSection(key, items, renderer) {
@@ -232,15 +161,16 @@ function renderSection(key, items, renderer) {
     if (countEl) countEl.textContent = toAr(items.length);
   }
 
-  if (!items.length) {
-    container.hidden = true;
-    if (sec) sec.hidden = true;
-    return;
-  }
-
+  const emptyCopy = {
+    quotes: 'لا توجد اقتباسات مضافة حالياً.',
+    articles: 'لا توجد مقالات مضافة حالياً.',
+    summaries: 'لا توجد ملخصات مضافة حالياً.',
+  };
   container.hidden = false;
   if (sec) sec.hidden = false;
-  container.innerHTML = items.map(renderer).join('');
+  container.innerHTML = items.length
+    ? items.map(renderer).join('')
+    : `<div class="section-empty"><span aria-hidden="true"></span><p>${emptyCopy[key]}</p></div>`;
 }
 
 function renderQuoteCard(q) {
@@ -320,8 +250,52 @@ function init() {
   }
 }
 
+/* تسجيل عامل الخدمة المستقل للمشروع المساند، وعزله تماماً عن الموقع الأساسي.
+   - عامل الخدمة الوحيد المسموح هنا هو عامل هذا المجلد (/jalees-members/).
+   - يُلغى أي عامل خدمة آخر على نفس النطاق (مثل عامل الموقع الأساسي) حتى لا
+     يعترض التنقّل أو يعيد عرض صفحة الموقع الأساسي عند انقطاع الشبكة.
+   - تُحذف كاشات الموقع الأساسي حتى لا تُمسح كاشات هذا المشروع عند زيارته. */
+async function isolateFromOriginalSite() {
+  if (!('serviceWorker' in navigator)) return;
+
+  const ownScope = new URL('./', location.href).pathname;
+  const ownScript = new URL('./sw.js', location.href).href;
+
+  try {
+    const registrations = await navigator.serviceWorker.getRegistrations();
+    await Promise.all(registrations
+      .filter((reg) => {
+        const scope = new URL(reg.scope).pathname;
+        const active = reg.active || reg.installing || reg.waiting;
+        const script = active ? active.scriptURL : '';
+        return scope.indexOf(ownScope) !== 0 || (script && script !== ownScript);
+      })
+      .map((reg) => reg.unregister().catch(() => {})));
+  } catch (_) { /* تجاهل أي قيد يمنع الإلغاء */ }
+
+  try {
+    const keys = await caches.keys();
+    await Promise.all(keys
+      .filter((key) => key.indexOf('jalees-') === 0 && key.indexOf('jalees-members') !== 0)
+      .map((key) => caches.delete(key).catch(() => {})));
+  } catch (_) { /* تجاهل أي قيد يمنع الحذف */ }
+}
+
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  if (location.protocol === 'file:') return; // عوامل الخدمة لا تعمل على file://
+  window.addEventListener('load', async () => {
+    await isolateFromOriginalSite();
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', init);
+  document.addEventListener('DOMContentLoaded', () => {
+    init();
+    registerServiceWorker();
+  });
 } else {
   init();
+  registerServiceWorker();
 }

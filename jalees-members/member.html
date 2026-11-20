@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -6,11 +6,12 @@
   <meta name="theme-color" content="#1E3A2B">
   <title>عضو | مجلس جليس</title>
   <meta name="description" content="اقتباسات ومقالات وملخصات العضو في نادي جليس القرائي · منطقة القصيم">
-  <link rel="shortcut icon" href="../logo-icon.png" type="image/png">
-  <link rel="apple-touch-icon" href="../logo-light.png">
+  <link rel="shortcut icon" href="assets/logo-icon.png" type="image/png">
+  <link rel="apple-touch-icon" href="assets/logo-light.png">
+  <link rel="manifest" href="manifest.json?v=12">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&family=Amiri:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="design.css?v=12">
 </head>
 <body>
   <div class="page-shell">
@@ -18,14 +19,15 @@
     <!-- رأس الصفحة مع زر الرجوع -->
     <header class="member-headbar">
       <div class="header-wrap">
+        <a class="header-brand" href="index.html" aria-label="مجلس أعضاء جليس">
+          <img class="header-logo" src="assets/logo.png?v=1" alt="جليس — أصدقاء القراءة">
+          <span class="brand-divider" aria-hidden="true"></span>
+          <span class="brand-caption">مجلس<br>الأعضاء</span>
+        </a>
         <a class="back-link" href="index.html">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15M10 6l6 6-6 6"/></svg>
           العودة إلى مجلس الأعضاء
         </a>
-        <div class="header-title">
-          <strong>مجلس العضو</strong>
-          <small>نادي جليس · القصيم</small>
-        </div>
       </div>
     </header>
 
@@ -78,10 +80,7 @@
 
     <footer class="site-footer">
       <div class="footer-wrap">
-        <div class="footer-brand">
-          <img class="header-logo" src="../logo-icon.png?v=1" alt="جليس" style="width:20px;height:20px;border-radius:6px;">
-          جليس
-        </div>
+        <div class="footer-brand">جليس <span>·</span> أصدقاء القراءة</div>
         <div class="footer-text">
           نادي جليس · منطقة القصيم &nbsp;|&nbsp; أصدقاء القراءة
         </div>
@@ -90,7 +89,7 @@
 
   </div>
 
-  <script src="data/members.js" defer></script>
-  <script src="script.js" defer></script>
+  <script src="data/members.js?v=12" defer></script>
+  <script src="script.js?v=12" defer></script>
 </body>
 </html>
